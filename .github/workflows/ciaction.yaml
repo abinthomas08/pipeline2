@@ -1,10 +1,11 @@
-name: Node.js CI (Staged)
+name: Node.js CI
 
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+<<<<<<< HEAD
 
 permissions:
   contents: read
@@ -15,18 +16,31 @@ env:
 jobs:
   test:
     name: Test
+=======
+
+jobs:
+  build-and-test:
+>>>>>>> d67fdc9 (4th)
     runs-on: ubuntu-latest
+
     steps:
+<<<<<<< HEAD
       - name: Checkout
+=======
+      # Step 1 - Checkout repository code
+      - name: Checkout code
+>>>>>>> d67fdc9 (4th)
         uses: actions/checkout@v4
 
+      # Step 2 - Setup Node.js (only version 20)
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
+          node-version: 20
 
+      # Step 3 - Install dependencies
       - name: Install dependencies
+<<<<<<< HEAD
         run: |
           if [ -f package-lock.json ]; then
             npm ci
@@ -35,10 +49,15 @@ jobs:
           fi
 
       - name: Run unit tests
-        run: npm test
-        env:
-          CI: true
+=======
+        run: npm install
 
+      # Step 4 - Run unit tests
+      - name: Run Jest tests
+>>>>>>> d67fdc9 (4th)
+        run: npm test
+
+<<<<<<< HEAD
   build:
     name: Build
     runs-on: ubuntu-latest
@@ -68,12 +87,23 @@ jobs:
         run: |
           echo "Files in ./dist:"
           ls -lah dist || (echo "No dist directory found!" && exit 1)
+=======
+      # Step 5 - Build project
+      - name: Build project
+        run: npm run build
 
-      - name: Upload build artifact
+      # Step 6 - List build artifacts
+      - name: List built files
+        run: ls -R dist || echo "No dist folder found"
+>>>>>>> d67fdc9 (4th)
+
+      # Step 7 - Upload build artifacts (optional)
+      - name: Upload build folder
         uses: actions/upload-artifact@v4
         with:
-          name: dist-${{ github.sha }}
+          name: build-artifacts
           path: dist/
+<<<<<<< HEAD
           if-no-files-found: error
           retention-days: 7
 
@@ -92,3 +122,5 @@ jobs:
         run: |
           echo "Downloaded artifact contents:"
           ls -lah downloaded-dist
+=======
+>>>>>>> d67fdc9 (4th)
