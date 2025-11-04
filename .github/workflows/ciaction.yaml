@@ -1,8 +1,8 @@
-name: Node.js CI (Staged, Single Node)
+name: Node.js CI (Staged)
 
 on:
   push:
-
+ 
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -12,14 +12,14 @@ permissions:
   contents: read
 
 env:
-  NODE_VERSION: "20"  # <- set your single Node version here
+  NODE_VERSION: 20  # set your Node version here
 
 jobs:
   test:
-    name: Test (Node ${{ env.NODE_VERSION }})
+    name: Run Unit Tests
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Setup Node.js
@@ -28,20 +28,20 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
 
-      - name: Install deps
+      - name: Install dependencies
         run: npm ci
 
-      - name: Run unit tests
+      - name: Run tests
         run: npm test
         env:
           CI: true
 
   build:
-    name: Build
+    name: Build Project
     runs-on: ubuntu-latest
     needs: test
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Setup Node.js
@@ -50,17 +50,16 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
 
-      - name: Install deps
+      - name: Install dependencies
         run: npm ci
 
-      # Ensure package.json has: "build": "mkdir -p dist && cp app.js dist/"
-      - name: Build project
+      - name: Build
         run: npm run build
 
-      - name: List built files
+      - name: List build output
         run: |
-          echo "Built files in ./dist:"
-          ls -lah dist || echo "No dist found!"
+          echo "Files inside ./dist"
+          ls -lah dist || echo "No dist directory found!"
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
@@ -70,8 +69,8 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
-  list_artifacts:
-    name: Verify & List Uploaded Artifact
+  verify:
+    name: Verify Build Artifact
     runs-on: ubuntu-latest
     needs: build
     steps:
