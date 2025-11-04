@@ -1,86 +1,45 @@
-name: Node.js CI (Staged)
+name: Node.js CI
 
 on:
   push:
- 
-
-concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
-
-permissions:
-  contents: read
-
-env:
-  NODE_VERSION: 20  # set your Node version here
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  test:
-    name: Run Unit Tests
+  build-and-test:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout repository
+      # Step 1 - Checkout repository code
+      - name: Checkout code
         uses: actions/checkout@v4
 
+      # Step 2 - Setup Node.js (only version 20)
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
+          node-version: 20
 
+      # Step 3 - Install dependencies
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
-      - name: Run tests
+      # Step 4 - Run unit tests
+      - name: Run Jest tests
         run: npm test
-        env:
-          CI: true
 
-  build:
-    name: Build Project
-    runs-on: ubuntu-latest
-    needs: test
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build
+      # Step 5 - Build project
+      - name: Build project
         run: npm run build
 
-      - name: List build output
-        run: |
-          echo "Files inside ./dist"
-          ls -lah dist || echo "No dist directory found!"
+      # Step 6 - List build artifacts
+      - name: List built files
+        run: ls -R dist || echo "No dist folder found"
 
-      - name: Upload build artifact
+      # Step 7 - Upload build artifacts (optional)
+      - name: Upload build folder
         uses: actions/upload-artifact@v4
         with:
-          name: dist-${{ github.sha }}
+          name: build-artifacts
           path: dist/
-          if-no-files-found: error
-          retention-days: 7
-
-  verify:
-    name: Verify Build Artifact
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: dist-${{ github.sha }}
-          path: downloaded-dist
-
-      - name: Show contents
-        run: |
-          echo "Downloaded artifact contents:"
-          ls -lah downloaded-dist
